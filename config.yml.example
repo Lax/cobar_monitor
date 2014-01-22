@@ -1,4 +1,5 @@
 cobar:
   uri: http://_HOST_/_PATH_TO_COBAR_/clusterInstantPerfValue.ajax
+  clusterid: 1
 monitor:
   interval: 60

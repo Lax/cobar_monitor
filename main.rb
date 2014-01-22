@@ -23,7 +23,7 @@ def fetch_data(prev_data, is_init=true)
   last_data_json = JSON.dump(prev_data_with_mask)
 
   post_data = {
-    'clusterId' => 2,
+    'clusterId' => $clusterid,
     'last' => last_data_json,
     'valueType' => 'cobarClusterLevelThroughput',
     'nowTime' => Time.now.gmtime
@@ -44,6 +44,7 @@ if __FILE__ == $0
   config = YAML.load_file('config.yml')
   $api_uri = URI(config['cobar']['uri'])
   $interval = config['monitor']['interval']
+  $clusterid = ARGV[0] ? ARGV[0] : config['cobar']['clusterid']
 
   $stdout.sync = true
 
@@ -54,11 +55,10 @@ if __FILE__ == $0
 
   loop do
     current_data, will_init = fetch_data(prev_data, init)
-    
-    # 正常数据输出
+
     if not init and not will_init
       current_data.each_with_index do |data, idx|
-        #puts "#{data['netIn_deriv']} #{data['netOut_deriv']} #{data['connection']} #{data['request_deriv']} #{data['flag']} #{data['id']}"
+        next unless (data['timestamp'] - prev_data[idx]['timestamp']) > 0
 
         ['netIn', 'netOut', 'request'].each do |metric|
           value_per_second = (data[metric] - prev_data[idx][metric]) * 1000 / (data['timestamp'] - prev_data[idx]['timestamp'])
